@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALIUNG_LIM - Financial Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -17,6 +18,8 @@
             --light: #f8f9fa;
             --sidebar: #16213e;
             --sidebar-hover: #0f3460;
+            --card-bg: rgba(30, 30, 60, 0.8);
+            --modal-bg: #1e1e3d;
         }
 
         * {
@@ -30,6 +33,7 @@
             background-color: var(--dark);
             color: var(--light);
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
         /* Login Page Styles */
@@ -49,6 +53,7 @@
             border-radius: 50%;
             animation: fall linear infinite;
             opacity: 0.8;
+            z-index: 1;
         }
 
         @keyframes fall {
@@ -58,31 +63,19 @@
         }
 
         .login-box {
-            background: rgba(30, 30, 60, 0.8);
+            background: rgba(30, 30, 60, 0.9);
             padding: 2.5rem;
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(67, 97, 238, 0.5),
-                        0 0 40px rgba(67, 97, 238, 0.3),
-                        0 0 60px rgba(67, 97, 238, 0.1);
+            box-shadow: 0 0 30px rgba(67, 97, 238, 0.6);
             width: 90%;
             max-width: 400px;
             z-index: 10;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(67, 97, 238, 0.3);
-            animation: glow 2s infinite alternate;
-        }
-
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 10px rgba(67, 97, 238, 0.5),
-                            0 0 20px rgba(67, 97, 238, 0.3);
-            }
-            to {
-                box-shadow: 0 0 20px rgba(67, 97, 238, 0.7),
-                            0 0 40px rgba(67, 97, 238, 0.5),
-                            0 0 60px rgba(67, 97, 238, 0.3);
-            }
+            border: 1px solid rgba(67, 97, 238, 0.4);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
         }
 
         .login-box::before {
@@ -100,7 +93,7 @@
                 var(--accent)
             );
             transform: rotate(30deg);
-            animation: shine 3s infinite;
+            animation: shine 6s infinite;
             z-index: -1;
         }
 
@@ -119,10 +112,12 @@
             color: white;
             font-size: 1.8rem;
             font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .login-title span {
             color: var(--accent);
+            font-weight: 700;
         }
 
         .input-group {
@@ -133,8 +128,9 @@
         .input-group label {
             display: block;
             margin-bottom: 0.5rem;
-            color: var(--light);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .input-group input {
@@ -142,7 +138,7 @@
             padding: 0.8rem 1rem;
             border: 1px solid rgba(67, 97, 238, 0.5);
             border-radius: 8px;
-            background-color: rgba(30, 30, 60, 0.5);
+            background-color: rgba(20, 20, 50, 0.7);
             color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -151,7 +147,8 @@
         .input-group input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+            background-color: rgba(20, 20, 50, 0.9);
         }
 
         .login-btn {
@@ -166,12 +163,34 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
         }
 
         .login-btn:hover {
             background: linear-gradient(135deg, var(--secondary), var(--primary));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.5);
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
         }
 
         /* Dashboard Styles */
@@ -181,18 +200,19 @@
         }
 
         .sidebar {
-            width: 250px;
+            width: 280px;
             background-color: var(--sidebar);
             position: fixed;
             height: 100vh;
             padding: 1.5rem 0;
             transition: all 0.3s ease;
             z-index: 100;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(67, 97, 238, 0.2);
         }
 
         .sidebar-collapsed {
-            transform: translateX(-200px);
+            transform: translateX(-230px);
         }
 
         .sidebar-header {
@@ -203,12 +223,14 @@
 
         .sidebar-header h2 {
             color: white;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .sidebar-header h2 span {
             color: var(--accent);
+            font-weight: 700;
         }
 
         .sidebar-menu {
@@ -228,6 +250,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            font-size: 0.95rem;
         }
 
         .sidebar-menu a:hover {
@@ -260,11 +283,13 @@
         .sidebar-menu i {
             margin-right: 0.8rem;
             font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
         }
 
         .main-content {
-            margin-left: 250px;
-            padding: 1.5rem;
+            margin-left: 280px;
+            padding: 2rem;
             transition: all 0.3s ease;
         }
 
@@ -277,33 +302,40 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .header h1 {
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 600;
         }
 
         .user-info {
             display: flex;
             align-items: center;
+            gap: 0.8rem;
         }
 
         .user-info img {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            margin-right: 0.8rem;
             object-fit: cover;
+            border: 2px solid var(--accent);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
         }
 
         .user-details h4 {
             color: white;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin-bottom: 0.2rem;
+            font-weight: 500;
         }
 
         .user-details p {
@@ -316,12 +348,13 @@
             border: none;
             color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            margin-left: 1rem;
             transition: all 0.3s ease;
+            font-size: 1.1rem;
         }
 
         .logout-btn:hover {
             color: var(--danger);
+            transform: scale(1.1);
         }
 
         .stats-container {
@@ -332,17 +365,18 @@
         }
 
         .stat-card {
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             transition: all 0.3s ease;
             border-left: 4px solid var(--accent);
+            backdrop-filter: blur(5px);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
         }
 
         .stat-card.income {
@@ -365,8 +399,9 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .stat-title i {
@@ -376,22 +411,24 @@
 
         .stat-value {
             font-size: 1.8rem;
-            font-weight: 600;
+            font-weight: 700;
             color: white;
             margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
         }
 
         .stat-change {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
         }
 
         .content-section {
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(5px);
         }
 
         .section-header {
@@ -405,19 +442,23 @@
 
         .section-title {
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 600;
         }
 
         .add-btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
             color: white;
             font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .add-btn:hover {
@@ -427,22 +468,23 @@
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+            margin-bottom: 0.6rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.8rem;
+            padding: 0.8rem 1rem;
             border: 1px solid rgba(67, 97, 238, 0.5);
-            border-radius: 6px;
-            background-color: rgba(30, 30, 60, 0.5);
+            border-radius: 8px;
+            background-color: rgba(20, 20, 50, 0.7);
             color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -451,19 +493,20 @@
         .form-control:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+            background-color: rgba(20, 20, 50, 0.9);
         }
 
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
+            gap: 1.2rem;
         }
 
         .submit-btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 0.8rem 1.5rem;
             color: white;
             font-size: 1rem;
@@ -471,53 +514,61 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .submit-btn:hover {
             background: linear-gradient(135deg, var(--secondary), var(--primary));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.5);
         }
 
         .table-responsive {
             overflow-x: auto;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            font-size: 0.95rem;
         }
 
         .data-table th,
         .data-table td {
-            padding: 0.8rem;
+            padding: 1rem;
             text-align: left;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .data-table th {
-            background-color: rgba(67, 97, 238, 0.2);
+            background-color: rgba(67, 97, 238, 0.3);
             color: white;
             font-weight: 600;
             font-size: 0.9rem;
+            position: sticky;
+            top: 0;
         }
 
         .data-table td {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .data-table tr:hover td {
-            background-color: rgba(67, 97, 238, 0.1);
+            background-color: rgba(67, 97, 238, 0.15);
             color: white;
         }
 
         .badge {
             display: inline-block;
-            padding: 0.3rem 0.6rem;
+            padding: 0.35rem 0.7rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
@@ -536,6 +587,11 @@
             color: var(--warning);
         }
 
+        .badge-primary {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary);
+        }
+
         .action-btn {
             background: none;
             border: none;
@@ -544,14 +600,32 @@
             margin-right: 0.5rem;
             font-size: 1rem;
             transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn.edit {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .action-btn.delete {
+            background-color: rgba(247, 37, 133, 0.2);
         }
 
         .action-btn.edit:hover {
             color: var(--accent);
+            background-color: rgba(67, 97, 238, 0.3);
+            transform: scale(1.1);
         }
 
         .action-btn.delete:hover {
             color: var(--danger);
+            background-color: rgba(247, 37, 133, 0.3);
+            transform: scale(1.1);
         }
 
         /* Modal Styles */
@@ -562,21 +636,23 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
-            background-color: var(--sidebar);
-            border-radius: 10px;
+            background-color: var(--modal-bg);
+            border-radius: 12px;
             width: 90%;
             max-width: 500px;
             padding: 2rem;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             position: relative;
             animation: modalFadeIn 0.3s ease;
+            border: 1px solid rgba(67, 97, 238, 0.3);
         }
 
         @keyframes modalFadeIn {
@@ -601,7 +677,7 @@
 
         .modal-title {
             color: white;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: 600;
         }
 
@@ -616,6 +692,7 @@
 
         .close-btn:hover {
             color: var(--danger);
+            transform: scale(1.1);
         }
 
         .modal-footer {
@@ -624,6 +701,7 @@
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 0.8rem;
         }
 
         /* Notification Styles */
@@ -633,14 +711,15 @@
             right: 20px;
             background-color: var(--success);
             color: white;
-            padding: 1rem;
+            padding: 1rem 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             display: flex;
             align-items: center;
             transform: translateX(150%);
             transition: transform 0.3s ease;
+            max-width: 350px;
         }
 
         .notification.show {
@@ -655,21 +734,79 @@
             background-color: var(--warning);
         }
 
+        .notification.info {
+            background-color: var(--accent);
+        }
+
         .notification i {
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
+            margin-right: 0.8rem;
+            font-size: 1.3rem;
+        }
+
+        /* Data Backup Section */
+        .backup-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .backup-btn {
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .backup-btn.export {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary);
+        }
+
+        .backup-btn.export:hover {
+            background-color: rgba(67, 97, 238, 0.3);
+        }
+
+        .backup-btn.import {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+
+        .backup-btn.import:hover {
+            background-color: rgba(76, 201, 240, 0.3);
         }
 
         /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-250px);
+                width: 250px;
             }
             .sidebar.active {
                 transform: translateX(0);
             }
             .main-content {
                 margin-left: 0;
+                padding: 1.5rem;
             }
             .sidebar-toggle {
                 display: block;
@@ -683,6 +820,15 @@
             .login-box {
                 padding: 1.5rem;
             }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
         }
 
         @media (max-width: 576px) {
@@ -691,6 +837,13 @@
             }
             .form-row {
                 grid-template-columns: 1fr;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+            .backup-actions {
+                flex-direction: column;
             }
         }
 
@@ -703,6 +856,11 @@
             font-size: 1.5rem;
             cursor: pointer;
             margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--accent);
         }
 
         /* Hide elements based on active section */
@@ -718,9 +876,11 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
@@ -731,6 +891,12 @@
             }
             .main-content {
                 margin-left: 0;
+                padding: 0;
+            }
+            .content-section {
+                box-shadow: none;
+                background: none;
+                padding: 0;
             }
         }
 
@@ -751,6 +917,69 @@
             -ms-user-select: none;
             user-select: none;
         }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(67, 97, 238, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(67, 97, 238, 0.7);
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -767,7 +996,9 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" placeholder="Enter your password" required>
                 </div>
-                <button type="submit" class="login-btn">Login</button>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
             </form>
         </div>
     </div>
@@ -789,6 +1020,7 @@
                 <li><a href="#" data-section="debts-section"><i class="fas fa-file-invoice-dollar"></i> Data Utang & Piutang</a></li>
                 <li><a href="#" data-section="reports-section"><i class="fas fa-chart-bar"></i> Laporan</a></li>
                 <li><a href="#" data-section="export-section"><i class="fas fa-file-export"></i> Export Data</a></li>
+                <li><a href="#" data-section="backup-section"><i class="fas fa-database"></i> Backup Data</a></li>
             </ul>
         </div>
 
@@ -806,7 +1038,7 @@
                         <h4>Administrator</h4>
                         <p>Super Admin</p>
                     </div>
-                    <button class="logout-btn" id="logoutBtn">
+                    <button class="logout-btn" id="logoutBtn" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
@@ -853,13 +1085,15 @@
                     <div class="section-header">
                         <h3 class="section-title">Saldo</h3>
                     </div>
-                    <div class="stat-value" style="font-size: 2.5rem; text-align: center;" id="balanceAmount">Rp 0</div>
+                    <div class="stat-value" style="font-size: 2.5rem; text-align: center; padding: 1rem;" id="balanceAmount">Rp 0</div>
                 </div>
 
                 <div class="content-section">
                     <div class="section-header">
                         <h3 class="section-title">Transaksi Terakhir</h3>
-                        <button class="add-btn" id="viewAllTransactionsBtn">Lihat Semua</button>
+                        <button class="add-btn" id="viewAllTransactionsBtn">
+                            <i class="fas fa-list"></i> Lihat Semua
+                        </button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
@@ -914,7 +1148,9 @@
                                 <input type="text" id="incomeDescription" class="form-control" placeholder="Deskripsi pemasukan">
                             </div>
                         </div>
-                        <button type="submit" class="submit-btn">Simpan Pemasukan</button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Simpan Pemasukan
+                        </button>
                     </form>
                 </div>
             </div>
@@ -955,7 +1191,9 @@
                                 <input type="text" id="expenseDescription" class="form-control" placeholder="Deskripsi pengeluaran">
                             </div>
                         </div>
-                        <button type="submit" class="submit-btn">Simpan Pengeluaran</button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Simpan Pengeluaran
+                        </button>
                     </form>
                 </div>
             </div>
@@ -991,7 +1229,9 @@
                             <label for="debtDescription">Deskripsi (Opsional)</label>
                             <input type="text" id="debtDescription" class="form-control" placeholder="Deskripsi utang">
                         </div>
-                        <button type="submit" class="submit-btn">Simpan Utang</button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Simpan Utang
+                        </button>
                     </form>
                 </div>
             </div>
@@ -1027,7 +1267,9 @@
                             <label for="receivableDescription">Deskripsi (Opsional)</label>
                             <input type="text" id="receivableDescription" class="form-control" placeholder="Deskripsi piutang">
                         </div>
-                        <button type="submit" class="submit-btn">Simpan Piutang</button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Simpan Piutang
+                        </button>
                     </form>
                 </div>
             </div>
@@ -1149,12 +1391,16 @@
                                 <option value="2024">2024</option>
                                 <option value="2025">2025</option>
                             </select>
-                            <button id="generateReportBtn" class="add-btn" style="margin-left: 10px;">Generate</button>
+                            <button id="generateReportBtn" class="add-btn" style="margin-left: 10px;">
+                                <i class="fas fa-chart-pie"></i> Generate
+                            </button>
                         </div>
                     </div>
                     <div id="reportResults">
                         <!-- Report results will be displayed here -->
-                        <p>Pilih parameter laporan dan klik "Generate" untuk melihat laporan.</p>
+                        <p style="text-align: center; color: rgba(255, 255, 255, 0.7); padding: 2rem;">
+                            Pilih parameter laporan dan klik "Generate" untuk melihat laporan.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1178,9 +1424,9 @@
                         <div class="form-group">
                             <label for="exportFormat">Format</label>
                             <select id="exportFormat" class="form-control">
+                                <option value="excel">Excel (XLSX)</option>
                                 <option value="csv">CSV</option>
                                 <option value="json">JSON</option>
-                                <option value="pdf">PDF</option>
                             </select>
                         </div>
                     </div>
@@ -1194,7 +1440,58 @@
                             <input type="date" id="exportEndDate" class="form-control">
                         </div>
                     </div>
-                    <button id="exportBtn" class="submit-btn">Export Data</button>
+                    <button id="exportBtn" class="submit-btn">
+                        <i class="fas fa-file-export"></i> Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Backup Section -->
+            <div class="section-content" id="backup-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Backup & Restore Data</h3>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: rgba(255, 255, 255, 0.8);">
+                        Backup data Anda untuk mencegah kehilangan data atau untuk transfer ke perangkat lain.
+                    </p>
+                    
+                    <div class="backup-section">
+                        <h4 style="margin-bottom: 1rem; color: white;">Backup Data</h4>
+                        <p style="margin-bottom: 1rem; color: rgba(255, 255, 255, 0.7);">
+                            Export semua data ke file untuk disimpan sebagai backup.
+                        </p>
+                        <div class="backup-actions">
+                            <button id="backupAllBtn" class="backup-btn export">
+                                <i class="fas fa-download"></i> Backup Semua Data
+                            </button>
+                            <button id="backupTransactionsBtn" class="backup-btn export">
+                                <i class="fas fa-exchange-alt"></i> Backup Transaksi
+                            </button>
+                            <button id="backupDebtsBtn" class="backup-btn export">
+                                <i class="fas fa-hand-holding-usd"></i> Backup Utang
+                            </button>
+                            <button id="backupReceivablesBtn" class="backup-btn export">
+                                <i class="fas fa-hand-holding-heart"></i> Backup Piutang
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="backup-section">
+                        <h4 style="margin-bottom: 1rem; color: white;">Restore Data</h4>
+                        <p style="margin-bottom: 1rem; color: rgba(255, 255, 255, 0.7);">
+                            Import data dari file backup sebelumnya.
+                        </p>
+                        <div class="form-group">
+                            <label for="restoreFile">Pilih File Backup</label>
+                            <input type="file" id="restoreFile" class="form-control" accept=".json,.csv,.xlsx">
+                        </div>
+                        <div class="backup-actions">
+                            <button id="restoreBtn" class="backup-btn import">
+                                <i class="fas fa-upload"></i> Restore Data
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1233,7 +1530,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="submit-btn" id="updateTransactionBtn">Update</button>
+                    <button type="button" class="submit-btn" id="updateTransactionBtn">
+                        <i class="fas fa-save"></i> Update
+                    </button>
                 </div>
             </form>
         </div>
@@ -1281,7 +1580,9 @@
                     </select>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="submit-btn" id="updateDebtBtn">Update</button>
+                    <button type="button" class="submit-btn" id="updateDebtBtn">
+                        <i class="fas fa-save"></i> Update
+                    </button>
                 </div>
             </form>
         </div>
@@ -1386,7 +1687,7 @@
             }, 3000);
         }
 
-        // Local storage functions
+        // Local storage functions with backup
         function getData(key) {
             const data = localStorage.getItem(key);
             return data ? JSON.parse(data) : [];
@@ -1394,19 +1695,34 @@
 
         function saveData(key, data) {
             localStorage.setItem(key, JSON.stringify(data));
+            
+            // Also save a timestamp of the last update
+            localStorage.setItem(`${key}_last_updated`, new Date().toISOString());
         }
 
         // Initialize data if not exists
-        if (!localStorage.getItem('transactions')) {
-            saveData('transactions', []);
+        function initializeData() {
+            if (!localStorage.getItem('transactions')) {
+                saveData('transactions', []);
+            }
+
+            if (!localStorage.getItem('debts')) {
+                saveData('debts', []);
+            }
+
+            if (!localStorage.getItem('receivables')) {
+                saveData('receivables', []);
+            }
+            
+            // Check if we have backup data from another device
+            checkForBackupData();
         }
 
-        if (!localStorage.getItem('debts')) {
-            saveData('debts', []);
-        }
-
-        if (!localStorage.getItem('receivables')) {
-            saveData('receivables', []);
+        // Check for backup data from other devices
+        function checkForBackupData() {
+            // This is a placeholder for actual sync functionality
+            // In a real app, you would implement cloud sync or cross-device storage here
+            console.log("Checking for backup data...");
         }
 
         // Check if user is logged in
@@ -1491,6 +1807,18 @@
             document.getElementById('monthlyIncome').textContent = formatRupiah(monthlyIncome);
             document.getElementById('monthlyExpense').textContent = formatRupiah(monthlyExpense);
             
+            // Calculate unpaid debts and receivables
+            const unpaidDebt = debts
+                .filter(d => d.status === 'unpaid')
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const unpaidReceivable = receivables
+                .filter(r => r.status === 'unpaid')
+                .reduce((sum, r) => sum + r.amount, 0);
+                
+            document.getElementById('unpaidDebt').textContent = formatRupiah(unpaidDebt);
+            document.getElementById('unpaidReceivable').textContent = formatRupiah(unpaidReceivable);
+            
             // Show recent transactions (last 5)
             const recentTransactions = [...transactions]
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -1564,16 +1892,19 @@
                 typeCell.appendChild(typeBadge);
                 
                 const actionCell = document.createElement('td');
+                actionCell.style.display = 'flex';
                 
                 const editBtn = document.createElement('button');
                 editBtn.className = 'action-btn edit';
                 editBtn.innerHTML = '<i class="fas fa-edit"></i>';
                 editBtn.onclick = () => openEditTransactionModal(t.id);
+                editBtn.title = 'Edit';
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete';
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
                 deleteBtn.onclick = () => deleteTransaction(t.id);
+                deleteBtn.title = 'Hapus';
                 
                 actionCell.appendChild(editBtn);
                 actionCell.appendChild(deleteBtn);
@@ -1639,16 +1970,19 @@
                 statusCell.appendChild(statusBadge);
                 
                 const actionCell = document.createElement('td');
+                actionCell.style.display = 'flex';
                 
                 const editBtn = document.createElement('button');
                 editBtn.className = 'action-btn edit';
                 editBtn.innerHTML = '<i class="fas fa-edit"></i>';
                 editBtn.onclick = () => openEditDebtModal(d.id, d.debtType);
+                editBtn.title = 'Edit';
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete';
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
                 deleteBtn.onclick = () => deleteDebt(d.id, d.debtType);
+                deleteBtn.title = 'Hapus';
                 
                 actionCell.appendChild(editBtn);
                 actionCell.appendChild(deleteBtn);
@@ -1917,9 +2251,9 @@
             const reportResults = document.getElementById('reportResults');
             reportResults.innerHTML = `
                 <div class="content-section">
-                    <h3>Laporan ${reportType === 'monthly' ? 'Bulanan' : 'Tahunan'} ${reportType === 'monthly' ? getMonthName(month) : ''} ${year}</h3>
+                    <h3 style="margin-bottom: 1.5rem;">Laporan ${reportType === 'monthly' ? 'Bulanan' : 'Tahunan'} ${reportType === 'monthly' ? getMonthName(month) : ''} ${year}</h3>
                     
-                    <div class="stats-container" style="margin-top: 1rem;">
+                    <div class="stats-container" style="margin-top: 1rem; margin-bottom: 2rem;">
                         <div class="stat-card income">
                             <div class="stat-title">
                                 <i class="fas fa-coins"></i>
@@ -1934,50 +2268,106 @@
                             </div>
                             <div class="stat-value">${formatRupiah(totalExpense)}</div>
                         </div>
-                        <div class="stat-card debt">
+                        <div class="stat-card">
                             <div class="stat-title">
-                                <i class="fas fa-hand-holding-usd"></i>
-                                <span>Total Utang</span>
+                                <i class="fas fa-calculator"></i>
+                                <span>Saldo</span>
                             </div>
-                            <div class="stat-value">${formatRupiah(totalDebt)}</div>
-                        </div>
-                        <div class="stat-card receivable">
-                            <div class="stat-title">
-                                <i class="fas fa-hand-holding-heart"></i>
-                                <span>Total Piutang</span>
-                            </div>
-                            <div class="stat-value">${formatRupiah(totalReceivable)}</div>
+                            <div class="stat-value">${formatRupiah(balance)}</div>
                         </div>
                     </div>
                     
-                    <div style="margin-top: 2rem; text-align: center;">
-                        <h4>Saldo: ${formatRupiah(balance)}</h4>
-                    </div>
-                    
-                    <div style="margin-top: 2rem;">
-                        <h4>Detail Transaksi</h4>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>Kategori</th>
-                                    <th>Deskripsi</th>
-                                    <th>Jumlah</th>
-                                    <th>Tipe</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filteredTransactions.map(t => `
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">Rincian Transaksi</h4>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
                                     <tr>
-                                        <td>${new Date(t.date).toLocaleDateString('id-ID')}</td>
-                                        <td>${t.category}</td>
-                                        <td>${t.description || '-'}</td>
-                                        <td>${formatRupiah(t.amount)}</td>
-                                        <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}">${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span></td>
+                                        <th>Tanggal</th>
+                                        <th>Kategori</th>
+                                        <th>Deskripsi</th>
+                                        <th>Jumlah</th>
+                                        <th>Tipe</th>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    ${filteredTransactions.length > 0 ? 
+                                        filteredTransactions.map(t => `
+                                            <tr>
+                                                <td>${new Date(t.date).toLocaleDateString('id-ID')}</td>
+                                                <td>${t.category}</td>
+                                                <td>${t.description || '-'}</td>
+                                                <td>${formatRupiah(t.amount)}</td>
+                                                <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}">${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span></td>
+                                            </tr>
+                                        `).join('') : 
+                                        `<tr><td colspan="5" style="text-align: center; color: rgba(255, 255, 255, 0.7);">Tidak ada data transaksi</td></tr>`
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">Rincian Utang</h4>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Jatuh Tempo</th>
+                                        <th>Pemberi Utang</th>
+                                        <th>Jumlah</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredDebts.length > 0 ? 
+                                        filteredDebts.map(d => `
+                                            <tr>
+                                                <td>${new Date(d.date).toLocaleDateString('id-ID')}</td>
+                                                <td>${new Date(d.dueDate).toLocaleDateString('id-ID')}</td>
+                                                <td>${d.person}</td>
+                                                <td>${formatRupiah(d.amount)}</td>
+                                                <td><span class="badge ${d.status === 'paid' ? 'badge-success' : 'badge-warning'}">${d.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span></td>
+                                            </tr>
+                                        `).join('') : 
+                                        `<tr><td colspan="5" style="text-align: center; color: rgba(255, 255, 255, 0.7);">Tidak ada data utang</td></tr>`
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 style="margin-bottom: 1rem;">Rincian Piutang</h4>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Jatuh Tempo</th>
+                                        <th>Penerima Piutang</th>
+                                        <th>Jumlah</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredReceivables.length > 0 ? 
+                                        filteredReceivables.map(r => `
+                                            <tr>
+                                                <td>${new Date(r.date).toLocaleDateString('id-ID')}</td>
+                                                <td>${new Date(r.dueDate).toLocaleDateString('id-ID')}</td>
+                                                <td>${r.person}</td>
+                                                <td>${formatRupiah(r.amount)}</td>
+                                                <td><span class="badge ${r.status === 'paid' ? 'badge-success' : 'badge-warning'}">${r.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span></td>
+                                            </tr>
+                                        `).join('') : 
+                                        `<tr><td colspan="5" style="text-align: center; color: rgba(255, 255, 255, 0.7);">Tidak ada data piutang</td></tr>`
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1992,6 +2382,76 @@
                 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
             ];
             return months[parseInt(monthNumber) - 1];
+        }
+
+        // Export data to Excel
+        function exportToExcel(data, fileName) {
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Convert data to worksheet
+            const ws = XLSX.utils.json_to_sheet(data);
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Data");
+            
+            // Generate Excel file and download
+            XLSX.writeFile(wb, `${fileName}.xlsx`);
+            
+            showNotification(`Data berhasil diexport ke Excel (${fileName}.xlsx)`);
+        }
+
+        // Export data to CSV
+        function exportToCSV(data, fileName) {
+            // Convert data to CSV
+            const headers = Object.keys(data[0]);
+            let csv = headers.join(',') + '\n';
+            
+            csv += data.map(row => {
+                return headers.map(header => {
+                    // Format date fields
+                    if (header === 'date' || header === 'dueDate' || header === 'createdAt') {
+                        return new Date(row[header]).toLocaleDateString('id-ID');
+                    }
+                    // Format amount fields
+                    if (header === 'amount') {
+                        return formatRupiah(row[header]).replace('Rp', '').trim();
+                    }
+                    return row[header];
+                }).join(',');
+            }).join('\n');
+            
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Data berhasil diexport ke CSV (${fileName}.csv)`);
+        }
+
+        // Export data to JSON
+        function exportToJSON(data, fileName) {
+            // Convert data to JSON string
+            const json = JSON.stringify(data, null, 2);
+            
+            // Create download link
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Data berhasil diexport ke JSON (${fileName}.json)`);
         }
 
         // Export data
@@ -2051,61 +2511,124 @@
                 }
             }
             
-            // Prepare data based on format
-            let exportContent = '';
-            let mimeType = '';
-            
-            if (exportFormat === 'csv') {
+            // Export based on format
+            if (exportFormat === 'excel') {
                 if (exportType === 'all') {
-                    // For all data, we'll create a ZIP with multiple CSV files
+                    // Create a workbook with multiple sheets
+                    const wb = XLSX.utils.book_new();
+                    
+                    // Add transactions sheet
+                    const transactionsWS = XLSX.utils.json_to_sheet(dataToExport.transactions);
+                    XLSX.utils.book_append_sheet(wb, transactionsWS, "Transaksi");
+                    
+                    // Add debts sheet
+                    const debtsWS = XLSX.utils.json_to_sheet(dataToExport.debts);
+                    XLSX.utils.book_append_sheet(wb, debtsWS, "Utang");
+                    
+                    // Add receivables sheet
+                    const receivablesWS = XLSX.utils.json_to_sheet(dataToExport.receivables);
+                    XLSX.utils.book_append_sheet(wb, receivablesWS, "Piutang");
+                    
+                    // Export the workbook
+                    XLSX.writeFile(wb, `${fileName}.xlsx`);
+                    showNotification(`Semua data berhasil diexport ke Excel (${fileName}.xlsx)`);
+                } else {
+                    exportToExcel(dataToExport, fileName);
+                }
+            } else if (exportFormat === 'csv') {
+                if (exportType === 'all') {
                     showNotification('Export semua data dalam format CSV belum didukung', 'warning');
                     return;
                 } else {
-                    // Convert to CSV
-                    if (dataToExport.length === 0) {
-                        showNotification('Tidak ada data untuk diexport', 'warning');
-                        return;
-                    }
-                    
-                    // Get headers
-                    const headers = Object.keys(dataToExport[0]);
-                    
-                    // Create CSV content
-                    exportContent = headers.join(',') + '\n';
-                    exportContent += dataToExport.map(item => {
-                        return headers.map(header => {
-                            // Format date fields
-                            if (header === 'date' || header === 'dueDate' || header === 'createdAt') {
-                                return new Date(item[header]).toISOString();
-                            }
-                            return item[header];
-                        }).join(',');
-                    }).join('\n');
-                    
-                    mimeType = 'text/csv';
-                    fileName += '.csv';
+                    exportToCSV(dataToExport, fileName);
                 }
             } else if (exportFormat === 'json') {
-                exportContent = JSON.stringify(dataToExport, null, 2);
-                mimeType = 'application/json';
-                fileName += '.json';
-            } else if (exportFormat === 'pdf') {
-                showNotification('Export PDF belum didukung', 'warning');
-                return;
+                exportToJSON(dataToExport, fileName);
             }
+        }
+
+        // Backup all data
+        function backupAllData() {
+            const allData = {
+                transactions: getData('transactions'),
+                debts: getData('debts'),
+                receivables: getData('receivables'),
+                meta: {
+                    exportedAt: new Date().toISOString(),
+                    app: "ALIUNG_LIM Financial Dashboard"
+                }
+            };
             
-            // Create download link
-            const blob = new Blob([exportContent], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            exportToJSON(allData, `aliung_lim_backup_${new Date().toISOString().split('T')[0]}`);
+        }
+
+        // Backup transactions
+        function backupTransactions() {
+            const transactions = getData('transactions');
+            exportToJSON(transactions, `aliung_lim_transactions_${new Date().toISOString().split('T')[0]}`);
+        }
+
+        // Backup debts
+        function backupDebts() {
+            const debts = getData('debts');
+            exportToJSON(debts, `aliung_lim_debts_${new Date().toISOString().split('T')[0]}`);
+        }
+
+        // Backup receivables
+        function backupReceivables() {
+            const receivables = getData('receivables');
+            exportToJSON(receivables, `aliung_lim_receivables_${new Date().toISOString().split('T')[0]}`);
+        }
+
+        // Restore data from file
+        function restoreData(file) {
+            const reader = new FileReader();
             
-            showNotification(`Data berhasil diexport (${exportFormat.toUpperCase()})`);
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('Apakah Anda yakin ingin mengimpor data ini? Data yang ada mungkin akan ditimpa.')) {
+                        if (data.transactions && data.debts && data.receivables) {
+                            // Full backup
+                            saveData('transactions', data.transactions);
+                            saveData('debts', data.debts);
+                            saveData('receivables', data.receivables);
+                            showNotification('Semua data berhasil diimpor', 'success');
+                        } else if (Array.isArray(data) && data.length > 0) {
+                            // Single data type (transactions, debts, or receivables)
+                            if (data[0].type) {
+                                // Transactions
+                                saveData('transactions', data);
+                                showNotification('Data transaksi berhasil diimpor', 'success');
+                            } else if (data[0].person) {
+                                // Debts or receivables - need to check which one
+                                if (data[0].status) {
+                                    // Could be either, we'll assume debts
+                                    saveData('debts', data);
+                                    showNotification('Data utang berhasil diimpor', 'success');
+                                } else {
+                                    showNotification('Format data tidak dikenali', 'error');
+                                    return;
+                                }
+                            }
+                        } else {
+                            showNotification('Format file backup tidak valid', 'error');
+                            return;
+                        }
+                        
+                        // Reload the dashboard
+                        loadDashboard();
+                        loadTransactionsTable();
+                        loadDebtsTable();
+                    }
+                } catch (error) {
+                    showNotification('Gagal memproses file backup', 'error');
+                    console.error(error);
+                }
+            };
+            
+            reader.readAsText(file);
         }
 
         // Format amount input
@@ -2159,6 +2682,11 @@
                 loadTransactionsTable();
             } else if (sectionId === 'debts-section') {
                 loadDebtsTable();
+            } else if (sectionId === 'reports-section') {
+                // Set current month and year for reports
+                const currentDate = new Date();
+                document.getElementById('reportMonth').value = currentDate.getMonth() + 1;
+                document.getElementById('reportYear').value = currentDate.getFullYear();
             }
         }
 
@@ -2167,13 +2695,22 @@
             const today = new Date().toISOString().split('T')[0];
             const dateInputs = [
                 'incomeDate', 'expenseDate', 'debtDate', 'debtDueDate',
-                'receivableDate', 'receivableDueDate'
+                'receivableDate', 'receivableDueDate', 'exportStartDate', 'exportEndDate'
             ];
             
             dateInputs.forEach(id => {
                 const input = document.getElementById(id);
                 if (input) {
-                    input.value = today;
+                    if (id === 'exportStartDate') {
+                        // Set start date to first day of current month
+                        const firstDay = new Date();
+                        firstDay.setDate(1);
+                        input.value = firstDay.toISOString().split('T')[0];
+                    } else if (id === 'exportEndDate') {
+                        input.value = today;
+                    } else {
+                        input.value = today;
+                    }
                 }
             });
         }
@@ -2182,6 +2719,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Create stars animation
             createStars();
+            
+            // Initialize data
+            initializeData();
             
             // Check login status
             checkLogin();
@@ -2225,7 +2765,7 @@
                     
                     // Get section to show
                     const sectionId = this.getAttribute('data-section');
-                    const title = this.textContent;
+                    const title = this.querySelector('span').textContent || this.textContent;
                     
                     // Switch section
                     switchSection(sectionId, title);
@@ -2340,6 +2880,22 @@
             
             // Export button
             document.getElementById('exportBtn').addEventListener('click', exportData);
+            
+            // Backup buttons
+            document.getElementById('backupAllBtn').addEventListener('click', backupAllData);
+            document.getElementById('backupTransactionsBtn').addEventListener('click', backupTransactions);
+            document.getElementById('backupDebtsBtn').addEventListener('click', backupDebts);
+            document.getElementById('backupReceivablesBtn').addEventListener('click', backupReceivables);
+            
+            // Restore button
+            document.getElementById('restoreBtn').addEventListener('click', function() {
+                const fileInput = document.getElementById('restoreFile');
+                if (fileInput.files.length > 0) {
+                    restoreData(fileInput.files[0]);
+                } else {
+                    showNotification('Pilih file backup terlebih dahulu', 'error');
+                }
+            });
             
             // Edit transaction modal
             document.getElementById('closeEditTransactionModal').addEventListener('click', function() {
