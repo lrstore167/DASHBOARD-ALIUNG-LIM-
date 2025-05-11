@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALIUNG_LIM - Financial Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --danger: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --sidebar: #16213e;
+            --sidebar-hover: #0f3460;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: fall linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .login-box {
+            background: rgba(30, 30, 60, 0.8);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(67, 97, 238, 0.5),
+                        0 0 40px rgba(67, 97, 238, 0.3),
+                        0 0 60px rgba(67, 97, 238, 0.1);
+            width: 90%;
+            max-width: 400px;
+            z-index: 10;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(67, 97, 238, 0.5),
+                            0 0 20px rgba(67, 97, 238, 0.3);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(67, 97, 238, 0.7),
+                            0 0 40px rgba(67, 97, 238, 0.5),
+                            0 0 60px rgba(67, 97, 238, 0.3);
+            }
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent,
+                transparent,
+                transparent,
+                var(--accent)
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+            z-index: -1;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -50%;
+            }
+            100% {
+                left: 150%;
+            }
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .login-title span {
+            color: var(--accent);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(67, 97, 238, 0.5);
+            border-radius: 8px;
+            background-color: rgba(30, 30, 60, 0.5);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(67, 97, 238, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar);
+            position: fixed;
+            height: 100vh;
+            padding: 1.5rem 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-collapsed {
+            transform: translateX(-200px);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 0 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .sidebar-header h2 span {
+            color: var(--accent);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-menu a:hover {
+            color: white;
+            background-color: var(--sidebar-hover);
+        }
+
+        .sidebar-menu a.active {
+            color: white;
+            background-color: var(--sidebar-hover);
+        }
+
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--accent);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-menu a:hover::before,
+        .sidebar-menu a.active::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-menu i {
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .main-content-expanded {
+            margin-left: 50px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 0.8rem;
+            object-fit: cover;
+        }
+
+        .user-details h4 {
+            color: white;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-details p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card.income {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.expense {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.debt {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.receivable {
+            border-left-color: var(--primary);
+        }
+
+        .stat-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .stat-title i {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .content-section {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid rgba(67, 97, 238, 0.5);
+            border-radius: 6px;
+            background-color: rgba(30, 30, 60, 0.5);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(67, 97, 238, 0.5);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 6px;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .data-table td {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover td {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: white;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background-color: rgba(247, 37, 133, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background-color: rgba(248, 150, 30, 0.2);
+            color: var(--warning);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.edit:hover {
+            color: var(--accent);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--sidebar);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background-color: var(--danger);
+        }
+
+        .notification.warning {
+            background-color: var(--warning);
+        }
+
+        .notification i {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .login-box {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+
+        /* Hide elements based on active section */
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .sidebar, .header {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Disable text selection */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Disable right click */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <h1 class="login-title">ALIUNG<span>_LIM</span></h1>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>ALIUNG<span>_LIM</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-section="dashboard-section"><i class="fas fa-tachometer-alt"></i> Dashboard Utama</a></li>
+                <li><a href="#" data-section="income-section"><i class="fas fa-plus-circle"></i> Input Pemasukan</a></li>
+                <li><a href="#" data-section="expense-section"><i class="fas fa-minus-circle"></i> Input Pengeluaran</a></li>
+                <li><a href="#" data-section="debt-section"><i class="fas fa-hand-holding-usd"></i> Input Utang</a></li>
+                <li><a href="#" data-section="receivable-section"><i class="fas fa-hand-holding-heart"></i> Input Piutang</a></li>
+                <li><a href="#" data-section="transactions-section"><i class="fas fa-exchange-alt"></i> Data Transaksi</a></li>
+                <li><a href="#" data-section="debts-section"><i class="fas fa-file-invoice-dollar"></i> Data Utang & Piutang</a></li>
+                <li><a href="#" data-section="reports-section"><i class="fas fa-chart-bar"></i> Laporan</a></li>
+                <li><a href="#" data-section="export-section"><i class="fas fa-file-export"></i> Export Data</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Header -->
+            <div class="header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="pageTitle">Dashboard Utama</h1>
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4361ee&color=fff" alt="User">
+                    <div class="user-details">
+                        <h4>Administrator</h4>
+                        <p>Super Admin</p>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div class="section-content active" id="dashboard-section">
+                <div class="stats-container">
+                    <div class="stat-card income">
+                        <div class="stat-title">
+                            <i class="fas fa-coins"></i>
+                            <span>Total Pemasukan</span>
+                        </div>
+                        <div class="stat-value" id="totalIncome">Rp 0</div>
+                        <div class="stat-change">Bulan ini: <span id="monthlyIncome">Rp 0</span></div>
+                    </div>
+                    <div class="stat-card expense">
+                        <div class="stat-title">
+                            <i class="fas fa-wallet"></i>
+                            <span>Total Pengeluaran</span>
+                        </div>
+                        <div class="stat-value" id="totalExpense">Rp 0</div>
+                        <div class="stat-change">Bulan ini: <span id="monthlyExpense">Rp 0</span></div>
+                    </div>
+                    <div class="stat-card debt">
+                        <div class="stat-title">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            <span>Total Utang</span>
+                        </div>
+                        <div class="stat-value" id="totalDebt">Rp 0</div>
+                        <div class="stat-change">Belum dibayar: <span id="unpaidDebt">Rp 0</span></div>
+                    </div>
+                    <div class="stat-card receivable">
+                        <div class="stat-title">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <span>Total Piutang</span>
+                        </div>
+                        <div class="stat-value" id="totalReceivable">Rp 0</div>
+                        <div class="stat-change">Belum diterima: <span id="unpaidReceivable">Rp 0</span></div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Saldo</h3>
+                    </div>
+                    <div class="stat-value" style="font-size: 2.5rem; text-align: center;" id="balanceAmount">Rp 0</div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Transaksi Terakhir</h3>
+                        <button class="add-btn" id="viewAllTransactionsBtn">Lihat Semua</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori</th>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Tipe</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactionsTable">
+                                <!-- Recent transactions will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Income Section -->
+            <div class="section-content" id="income-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Input Pemasukan</h3>
+                    </div>
+                    <form id="incomeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeAmount">Jumlah</label>
+                                <input type="text" id="incomeAmount" class="form-control" placeholder="Rp" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="incomeCategory">Kategori</label>
+                                <select id="incomeCategory" class="form-control" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Gaji">Gaji</option>
+                                    <option value="Bonus">Bonus</option>
+                                    <option value="Investasi">Investasi</option>
+                                    <option value="Hadiah">Hadiah</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeDate">Tanggal</label>
+                                <input type="date" id="incomeDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="incomeDescription">Deskripsi (Opsional)</label>
+                                <input type="text" id="incomeDescription" class="form-control" placeholder="Deskripsi pemasukan">
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn">Simpan Pemasukan</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Expense Section -->
+            <div class="section-content" id="expense-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Input Pengeluaran</h3>
+                    </div>
+                    <form id="expenseForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseAmount">Jumlah</label>
+                                <input type="text" id="expenseAmount" class="form-control" placeholder="Rp" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseCategory">Kategori</label>
+                                <select id="expenseCategory" class="form-control" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Makanan">Makanan</option>
+                                    <option value="Transportasi">Transportasi</option>
+                                    <option value="Hiburan">Hiburan</option>
+                                    <option value="Tagihan">Tagihan</option>
+                                    <option value="Kesehatan">Kesehatan</option>
+                                    <option value="Belanja">Belanja</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseDate">Tanggal</label>
+                                <input type="date" id="expenseDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseDescription">Deskripsi (Opsional)</label>
+                                <input type="text" id="expenseDescription" class="form-control" placeholder="Deskripsi pengeluaran">
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn">Simpan Pengeluaran</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Debt Section -->
+            <div class="section-content" id="debt-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Input Utang</h3>
+                    </div>
+                    <form id="debtForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="debtAmount">Jumlah</label>
+                                <input type="text" id="debtAmount" class="form-control" placeholder="Rp" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="debtPerson">Orang/Bisnis</label>
+                                <input type="text" id="debtPerson" class="form-control" placeholder="Nama pemberi utang" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="debtDate">Tanggal</label>
+                                <input type="date" id="debtDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="debtDueDate">Tanggal Jatuh Tempo</label>
+                                <input type="date" id="debtDueDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="debtDescription">Deskripsi (Opsional)</label>
+                            <input type="text" id="debtDescription" class="form-control" placeholder="Deskripsi utang">
+                        </div>
+                        <button type="submit" class="submit-btn">Simpan Utang</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Receivable Section -->
+            <div class="section-content" id="receivable-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Input Piutang</h3>
+                    </div>
+                    <form id="receivableForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="receivableAmount">Jumlah</label>
+                                <input type="text" id="receivableAmount" class="form-control" placeholder="Rp" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="receivablePerson">Orang/Bisnis</label>
+                                <input type="text" id="receivablePerson" class="form-control" placeholder="Nama penerima piutang" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="receivableDate">Tanggal</label>
+                                <input type="date" id="receivableDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="receivableDueDate">Tanggal Jatuh Tempo</label>
+                                <input type="date" id="receivableDueDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="receivableDescription">Deskripsi (Opsional)</label>
+                            <input type="text" id="receivableDescription" class="form-control" placeholder="Deskripsi piutang">
+                        </div>
+                        <button type="submit" class="submit-btn">Simpan Piutang</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div class="section-content" id="transactions-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Data Transaksi</h3>
+                        <div>
+                            <select id="transactionFilter" class="form-control" style="display: inline-block; width: auto; margin-right: 10px;">
+                                <option value="all">Semua Transaksi</option>
+                                <option value="income">Pemasukan</option>
+                                <option value="expense">Pengeluaran</option>
+                            </select>
+                            <select id="transactionMonthFilter" class="form-control" style="display: inline-block; width: auto;">
+                                <option value="all">Semua Bulan</option>
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7">Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori</th>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Tipe</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <!-- Transactions will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Debts Section -->
+            <div class="section-content" id="debts-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Data Utang & Piutang</h3>
+                        <div>
+                            <select id="debtTypeFilter" class="form-control" style="display: inline-block; width: auto; margin-right: 10px;">
+                                <option value="all">Semua</option>
+                                <option value="debt">Utang</option>
+                                <option value="receivable">Piutang</option>
+                            </select>
+                            <select id="debtStatusFilter" class="form-control" style="display: inline-block; width: auto;">
+                                <option value="all">Semua Status</option>
+                                <option value="unpaid">Belum Lunas</option>
+                                <option value="paid">Lunas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Jatuh Tempo</th>
+                                    <th>Orang/Bisnis</th>
+                                    <th>Jumlah</th>
+                                    <th>Tipe</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="debtsTable">
+                                <!-- Debts and receivables will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="section-content" id="reports-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Laporan Keuangan</h3>
+                        <div>
+                            <select id="reportType" class="form-control" style="display: inline-block; width: auto; margin-right: 10px;">
+                                <option value="monthly">Bulanan</option>
+                                <option value="yearly">Tahunan</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <select id="reportMonth" class="form-control" style="display: inline-block; width: auto; margin-right: 10px;">
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7">Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                            <select id="reportYear" class="form-control" style="display: inline-block; width: auto;">
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                            </select>
+                            <button id="generateReportBtn" class="add-btn" style="margin-left: 10px;">Generate</button>
+                        </div>
+                    </div>
+                    <div id="reportResults">
+                        <!-- Report results will be displayed here -->
+                        <p>Pilih parameter laporan dan klik "Generate" untuk melihat laporan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="section-content" id="export-section">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Export Data</h3>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="exportType">Tipe Data</label>
+                            <select id="exportType" class="form-control">
+                                <option value="transactions">Transaksi</option>
+                                <option value="debts">Utang</option>
+                                <option value="receivables">Piutang</option>
+                                <option value="all">Semua Data</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="exportFormat">Format</label>
+                            <select id="exportFormat" class="form-control">
+                                <option value="csv">CSV</option>
+                                <option value="json">JSON</option>
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="exportStartDate">Tanggal Mulai (Opsional)</label>
+                            <input type="date" id="exportStartDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="exportEndDate">Tanggal Akhir (Opsional)</label>
+                            <input type="date" id="exportEndDate" class="form-control">
+                        </div>
+                    </div>
+                    <button id="exportBtn" class="submit-btn">Export Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div class="modal" id="editTransactionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Transaksi</h3>
+                <button class="close-btn" id="closeEditTransactionModal">&times;</button>
+            </div>
+            <form id="editTransactionForm">
+                <input type="hidden" id="editTransactionId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTransactionAmount">Jumlah</label>
+                        <input type="text" id="editTransactionAmount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTransactionCategory">Kategori</label>
+                        <select id="editTransactionCategory" class="form-control" required>
+                            <option value="">Pilih Kategori</option>
+                            <!-- Categories will be populated based on transaction type -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTransactionDate">Tanggal</label>
+                        <input type="date" id="editTransactionDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTransactionDescription">Deskripsi</label>
+                        <input type="text" id="editTransactionDescription" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="submit-btn" id="updateTransactionBtn">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Debt Modal -->
+    <div class="modal" id="editDebtModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Utang/Piutang</h3>
+                <button class="close-btn" id="closeEditDebtModal">&times;</button>
+            </div>
+            <form id="editDebtForm">
+                <input type="hidden" id="editDebtId">
+                <input type="hidden" id="editDebtType">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDebtAmount">Jumlah</label>
+                        <input type="text" id="editDebtAmount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDebtPerson">Orang/Bisnis</label>
+                        <input type="text" id="editDebtPerson" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDebtDate">Tanggal</label>
+                        <input type="date" id="editDebtDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDebtDueDate">Tanggal Jatuh Tempo</label>
+                        <input type="date" id="editDebtDueDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editDebtDescription">Deskripsi</label>
+                    <input type="text" id="editDebtDescription" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editDebtStatus">Status</label>
+                    <select id="editDebtStatus" class="form-control">
+                        <option value="unpaid">Belum Lunas</option>
+                        <option value="paid">Lunas</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="submit-btn" id="updateDebtBtn">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationMessage">Notification message</span>
+    </div>
+
+    <script>
+        // Disable right click, F12, Ctrl+Shift+I, Ctrl+Shift+C, etc.
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showNotification('Aksi ini tidak diizinkan', 'error');
+        });
+
+        document.addEventListener('keydown', function(e) {
+            // Disable F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                showNotification('Aksi ini tidak diizinkan', 'error');
+                return false;
+            }
+            
+            // Disable Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                showNotification('Aksi ini tidak diizinkan', 'error');
+                return false;
+            }
+            
+            // Disable Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                showNotification('Aksi ini tidak diizinkan', 'error');
+                return false;
+            }
+            
+            // Disable Ctrl+U
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                showNotification('Aksi ini tidak diizinkan', 'error');
+                return false;
+            }
+        });
+
+        // Create stars animation
+        function createStars() {
+            const container = document.querySelector('.login-container');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random size between 1px and 3px
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Random position
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration between 10s and 20s
+                const duration = Math.random() * 10 + 10;
+                star.style.animationDuration = `${duration}s`;
+                
+                // Random delay
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // Random opacity
+                star.style.opacity = Math.random() * 0.5 + 0.3;
+                
+                container.appendChild(star);
+            }
+        }
+
+        // Format currency to Rupiah
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            notificationMessage.textContent = message;
+            notification.className = 'notification';
+            notification.classList.add(type);
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Local storage functions
+        function getData(key) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        // Initialize data if not exists
+        if (!localStorage.getItem('transactions')) {
+            saveData('transactions', []);
+        }
+
+        if (!localStorage.getItem('debts')) {
+            saveData('debts', []);
+        }
+
+        if (!localStorage.getItem('receivables')) {
+            saveData('receivables', []);
+        }
+
+        // Check if user is logged in
+        function checkLogin() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboard();
+            }
+        }
+
+        // Login function
+        function login(username, password) {
+            if (username === 'aliung' && password === 'company209@') {
+                localStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboard();
+                showNotification('Login berhasil!');
+            } else {
+                showNotification('Username atau password salah', 'error');
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            showNotification('Anda telah logout', 'warning');
+        }
+
+        // Load dashboard data
+        function loadDashboard() {
+            const transactions = getData('transactions');
+            const debts = getData('debts');
+            const receivables = getData('receivables');
+            
+            // Calculate totals
+            const totalIncome = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalExpense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalDebt = debts
+                .filter(d => d.status === 'unpaid')
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const totalReceivable = receivables
+                .filter(r => r.status === 'unpaid')
+                .reduce((sum, r) => sum + r.amount, 0);
+                
+            const balance = totalIncome - totalExpense;
+            
+            // Update UI
+            document.getElementById('totalIncome').textContent = formatRupiah(totalIncome);
+            document.getElementById('totalExpense').textContent = formatRupiah(totalExpense);
+            document.getElementById('totalDebt').textContent = formatRupiah(totalDebt);
+            document.getElementById('totalReceivable').textContent = formatRupiah(totalReceivable);
+            document.getElementById('balanceAmount').textContent = formatRupiah(balance);
+            
+            // Calculate monthly totals
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            
+            const monthlyIncome = transactions
+                .filter(t => t.type === 'income' && 
+                       new Date(t.date).getMonth() + 1 === currentMonth &&
+                       new Date(t.date).getFullYear() === currentYear)
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const monthlyExpense = transactions
+                .filter(t => t.type === 'expense' && 
+                       new Date(t.date).getMonth() + 1 === currentMonth &&
+                       new Date(t.date).getFullYear() === currentYear)
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            document.getElementById('monthlyIncome').textContent = formatRupiah(monthlyIncome);
+            document.getElementById('monthlyExpense').textContent = formatRupiah(monthlyExpense);
+            
+            // Show recent transactions (last 5)
+            const recentTransactions = [...transactions]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+                
+            const recentTransactionsTable = document.getElementById('recentTransactionsTable');
+            recentTransactionsTable.innerHTML = '';
+            
+            recentTransactions.forEach(t => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = new Date(t.date).toLocaleDateString('id-ID');
+                
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = t.category;
+                
+                const descriptionCell = document.createElement('td');
+                descriptionCell.textContent = t.description || '-';
+                
+                const amountCell = document.createElement('td');
+                amountCell.textContent = formatRupiah(t.amount);
+                
+                const typeCell = document.createElement('td');
+                const typeBadge = document.createElement('span');
+                typeBadge.className = `badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}`;
+                typeBadge.textContent = t.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+                typeCell.appendChild(typeBadge);
+                
+                row.appendChild(dateCell);
+                row.appendChild(categoryCell);
+                row.appendChild(descriptionCell);
+                row.appendChild(amountCell);
+                row.appendChild(typeCell);
+                
+                recentTransactionsTable.appendChild(row);
+            });
+        }
+
+        // Load transactions table
+        function loadTransactionsTable(filter = 'all', month = 'all') {
+            const transactions = getData('transactions');
+            const filteredTransactions = transactions.filter(t => {
+                const matchesType = filter === 'all' || t.type === filter;
+                const matchesMonth = month === 'all' || new Date(t.date).getMonth() + 1 === parseInt(month);
+                return matchesType && matchesMonth;
+            });
+            
+            const transactionsTable = document.getElementById('transactionsTable');
+            transactionsTable.innerHTML = '';
+            
+            filteredTransactions.forEach(t => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = new Date(t.date).toLocaleDateString('id-ID');
+                
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = t.category;
+                
+                const descriptionCell = document.createElement('td');
+                descriptionCell.textContent = t.description || '-';
+                
+                const amountCell = document.createElement('td');
+                amountCell.textContent = formatRupiah(t.amount);
+                
+                const typeCell = document.createElement('td');
+                const typeBadge = document.createElement('span');
+                typeBadge.className = `badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}`;
+                typeBadge.textContent = t.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+                typeCell.appendChild(typeBadge);
+                
+                const actionCell = document.createElement('td');
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn edit';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                editBtn.onclick = () => openEditTransactionModal(t.id);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn delete';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.onclick = () => deleteTransaction(t.id);
+                
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+                
+                row.appendChild(dateCell);
+                row.appendChild(categoryCell);
+                row.appendChild(descriptionCell);
+                row.appendChild(amountCell);
+                row.appendChild(typeCell);
+                row.appendChild(actionCell);
+                
+                transactionsTable.appendChild(row);
+            });
+        }
+
+        // Load debts table
+        function loadDebtsTable(typeFilter = 'all', statusFilter = 'all') {
+            const debts = getData('debts');
+            const receivables = getData('receivables');
+            
+            let combined = [];
+            
+            if (typeFilter === 'all' || typeFilter === 'debt') {
+                combined = combined.concat(debts.map(d => ({ ...d, debtType: 'debt' })));
+            }
+            
+            if (typeFilter === 'all' || typeFilter === 'receivable') {
+                combined = combined.concat(receivables.map(r => ({ ...r, debtType: 'receivable' })));
+            }
+            
+            if (statusFilter !== 'all') {
+                combined = combined.filter(d => d.status === statusFilter);
+            }
+            
+            // Sort by date
+            combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const debtsTable = document.getElementById('debtsTable');
+            debtsTable.innerHTML = '';
+            
+            combined.forEach(d => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = new Date(d.date).toLocaleDateString('id-ID');
+                
+                const dueDateCell = document.createElement('td');
+                dueDateCell.textContent = new Date(d.dueDate).toLocaleDateString('id-ID');
+                
+                const personCell = document.createElement('td');
+                personCell.textContent = d.person;
+                
+                const amountCell = document.createElement('td');
+                amountCell.textContent = formatRupiah(d.amount);
+                
+                const typeCell = document.createElement('td');
+                typeCell.textContent = d.debtType === 'debt' ? 'Utang' : 'Piutang';
+                
+                const statusCell = document.createElement('td');
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `badge ${d.status === 'paid' ? 'badge-success' : 'badge-warning'}`;
+                statusBadge.textContent = d.status === 'paid' ? 'Lunas' : 'Belum Lunas';
+                statusCell.appendChild(statusBadge);
+                
+                const actionCell = document.createElement('td');
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn edit';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                editBtn.onclick = () => openEditDebtModal(d.id, d.debtType);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn delete';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.onclick = () => deleteDebt(d.id, d.debtType);
+                
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+                
+                row.appendChild(dateCell);
+                row.appendChild(dueDateCell);
+                row.appendChild(personCell);
+                row.appendChild(amountCell);
+                row.appendChild(typeCell);
+                row.appendChild(statusCell);
+                row.appendChild(actionCell);
+                
+                debtsTable.appendChild(row);
+            });
+        }
+
+        // Add new transaction
+        function addTransaction(type, amount, category, date, description) {
+            const transactions = getData('transactions');
+            const newTransaction = {
+                id: Date.now(),
+                type,
+                amount: parseInt(amount.replace(/\D/g, '')),
+                category,
+                date,
+                description,
+                createdAt: new Date().toISOString()
+            };
+            
+            transactions.push(newTransaction);
+            saveData('transactions', transactions);
+            loadDashboard();
+            loadTransactionsTable();
+            showNotification(`${type === 'income' ? 'Pemasukan' : 'Pengeluaran'} berhasil ditambahkan`);
+        }
+
+        // Add new debt or receivable
+        function addDebt(type, amount, person, date, dueDate, description) {
+            const key = type === 'debt' ? 'debts' : 'receivables';
+            const data = getData(key);
+            
+            const newDebt = {
+                id: Date.now(),
+                amount: parseInt(amount.replace(/\D/g, '')),
+                person,
+                date,
+                dueDate,
+                description,
+                status: 'unpaid',
+                createdAt: new Date().toISOString()
+            };
+            
+            data.push(newDebt);
+            saveData(key, data);
+            loadDashboard();
+            loadDebtsTable();
+            showNotification(`${type === 'debt' ? 'Utang' : 'Piutang'} berhasil ditambahkan`);
+        }
+
+        // Delete transaction
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                const transactions = getData('transactions');
+                const updatedTransactions = transactions.filter(t => t.id !== id);
+                saveData('transactions', updatedTransactions);
+                loadDashboard();
+                loadTransactionsTable();
+                showNotification('Transaksi berhasil dihapus');
+            }
+        }
+
+        // Delete debt or receivable
+        function deleteDebt(id, type) {
+            if (confirm(`Apakah Anda yakin ingin menghapus ${type === 'debt' ? 'utang' : 'piutang'} ini?`)) {
+                const key = type === 'debt' ? 'debts' : 'receivables';
+                const data = getData(key);
+                const updatedData = data.filter(d => d.id !== id);
+                saveData(key, updatedData);
+                loadDashboard();
+                loadDebtsTable();
+                showNotification(`${type === 'debt' ? 'Utang' : 'Piutang'} berhasil dihapus`);
+            }
+        }
+
+        // Open edit transaction modal
+        function openEditTransactionModal(id) {
+            const transactions = getData('transactions');
+            const transaction = transactions.find(t => t.id === id);
+            
+            if (!transaction) return;
+            
+            document.getElementById('editTransactionId').value = transaction.id;
+            document.getElementById('editTransactionAmount').value = formatRupiah(transaction.amount).replace('Rp', '').trim();
+            document.getElementById('editTransactionDate').value = transaction.date;
+            document.getElementById('editTransactionDescription').value = transaction.description || '';
+            
+            const categorySelect = document.getElementById('editTransactionCategory');
+            categorySelect.innerHTML = '';
+            
+            const categories = transaction.type === 'income' ? 
+                ['Gaji', 'Bonus', 'Investasi', 'Hadiah', 'Lainnya'] :
+                ['Makanan', 'Transportasi', 'Hiburan', 'Tagihan', 'Kesehatan', 'Belanja', 'Lainnya'];
+                
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                option.selected = cat === transaction.category;
+                categorySelect.appendChild(option);
+            });
+            
+            document.getElementById('editTransactionModal').style.display = 'flex';
+        }
+
+        // Open edit debt modal
+        function openEditDebtModal(id, type) {
+            const key = type === 'debt' ? 'debts' : 'receivables';
+            const data = getData(key);
+            const debt = data.find(d => d.id === id);
+            
+            if (!debt) return;
+            
+            document.getElementById('editDebtId').value = debt.id;
+            document.getElementById('editDebtType').value = type;
+            document.getElementById('editDebtAmount').value = formatRupiah(debt.amount).replace('Rp', '').trim();
+            document.getElementById('editDebtPerson').value = debt.person;
+            document.getElementById('editDebtDate').value = debt.date;
+            document.getElementById('editDebtDueDate').value = debt.dueDate;
+            document.getElementById('editDebtDescription').value = debt.description || '';
+            document.getElementById('editDebtStatus').value = debt.status;
+            
+            document.getElementById('editDebtModal').style.display = 'flex';
+        }
+
+        // Update transaction
+        function updateTransaction() {
+            const id = parseInt(document.getElementById('editTransactionId').value);
+            const amount = document.getElementById('editTransactionAmount').value;
+            const category = document.getElementById('editTransactionCategory').value;
+            const date = document.getElementById('editTransactionDate').value;
+            const description = document.getElementById('editTransactionDescription').value;
+            
+            const transactions = getData('transactions');
+            const transactionIndex = transactions.findIndex(t => t.id === id);
+            
+            if (transactionIndex === -1) return;
+            
+            transactions[transactionIndex] = {
+                ...transactions[transactionIndex],
+                amount: parseInt(amount.replace(/\D/g, '')),
+                category,
+                date,
+                description
+            };
+            
+            saveData('transactions', transactions);
+            document.getElementById('editTransactionModal').style.display = 'none';
+            loadDashboard();
+            loadTransactionsTable();
+            showNotification('Transaksi berhasil diperbarui');
+        }
+
+        // Update debt or receivable
+        function updateDebt() {
+            const id = parseInt(document.getElementById('editDebtId').value);
+            const type = document.getElementById('editDebtType').value;
+            const amount = document.getElementById('editDebtAmount').value;
+            const person = document.getElementById('editDebtPerson').value;
+            const date = document.getElementById('editDebtDate').value;
+            const dueDate = document.getElementById('editDebtDueDate').value;
+            const description = document.getElementById('editDebtDescription').value;
+            const status = document.getElementById('editDebtStatus').value;
+            
+            const key = type === 'debt' ? 'debts' : 'receivables';
+            const data = getData(key);
+            const debtIndex = data.findIndex(d => d.id === id);
+            
+            if (debtIndex === -1) return;
+            
+            data[debtIndex] = {
+                ...data[debtIndex],
+                amount: parseInt(amount.replace(/\D/g, '')),
+                person,
+                date,
+                dueDate,
+                description,
+                status
+            };
+            
+            saveData(key, data);
+            document.getElementById('editDebtModal').style.display = 'none';
+            loadDashboard();
+            loadDebtsTable();
+            showNotification(`${type === 'debt' ? 'Utang' : 'Piutang'} berhasil diperbarui`);
+        }
+
+        // Generate report
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const month = document.getElementById('reportMonth').value;
+            const year = document.getElementById('reportYear').value;
+            
+            const transactions = getData('transactions');
+            const debts = getData('debts');
+            const receivables = getData('receivables');
+            
+            let filteredTransactions = [];
+            let filteredDebts = [];
+            let filteredReceivables = [];
+            
+            if (reportType === 'monthly') {
+                filteredTransactions = transactions.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate.getMonth() + 1 === parseInt(month) && 
+                           tDate.getFullYear() === parseInt(year);
+                });
+                
+                filteredDebts = debts.filter(d => {
+                    const dDate = new Date(d.date);
+                    return dDate.getMonth() + 1 === parseInt(month) && 
+                           dDate.getFullYear() === parseInt(year);
+                });
+                
+                filteredReceivables = receivables.filter(r => {
+                    const rDate = new Date(r.date);
+                    return rDate.getMonth() + 1 === parseInt(month) && 
+                           rDate.getFullYear() === parseInt(year);
+                });
+            } else if (reportType === 'yearly') {
+                filteredTransactions = transactions.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate.getFullYear() === parseInt(year);
+                });
+                
+                filteredDebts = debts.filter(d => {
+                    const dDate = new Date(d.date);
+                    return dDate.getFullYear() === parseInt(year);
+                });
+                
+                filteredReceivables = receivables.filter(r => {
+                    const rDate = new Date(r.date);
+                    return rDate.getFullYear() === parseInt(year);
+                });
+            }
+            
+            // Calculate totals
+            const totalIncome = filteredTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalExpense = filteredTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalDebt = filteredDebts
+                .filter(d => d.status === 'unpaid')
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const totalReceivable = filteredReceivables
+                .filter(r => r.status === 'unpaid')
+                .reduce((sum, r) => sum + r.amount, 0);
+                
+            const balance = totalIncome - totalExpense;
+            
+            // Generate report HTML
+            const reportResults = document.getElementById('reportResults');
+            reportResults.innerHTML = `
+                <div class="content-section">
+                    <h3>Laporan ${reportType === 'monthly' ? 'Bulanan' : 'Tahunan'} ${reportType === 'monthly' ? getMonthName(month) : ''} ${year}</h3>
+                    
+                    <div class="stats-container" style="margin-top: 1rem;">
+                        <div class="stat-card income">
+                            <div class="stat-title">
+                                <i class="fas fa-coins"></i>
+                                <span>Total Pemasukan</span>
+                            </div>
+                            <div class="stat-value">${formatRupiah(totalIncome)}</div>
+                        </div>
+                        <div class="stat-card expense">
+                            <div class="stat-title">
+                                <i class="fas fa-wallet"></i>
+                                <span>Total Pengeluaran</span>
+                            </div>
+                            <div class="stat-value">${formatRupiah(totalExpense)}</div>
+                        </div>
+                        <div class="stat-card debt">
+                            <div class="stat-title">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                <span>Total Utang</span>
+                            </div>
+                            <div class="stat-value">${formatRupiah(totalDebt)}</div>
+                        </div>
+                        <div class="stat-card receivable">
+                            <div class="stat-title">
+                                <i class="fas fa-hand-holding-heart"></i>
+                                <span>Total Piutang</span>
+                            </div>
+                            <div class="stat-value">${formatRupiah(totalReceivable)}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <h4>Saldo: ${formatRupiah(balance)}</h4>
+                    </div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>Detail Transaksi</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori</th>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Tipe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filteredTransactions.map(t => `
+                                    <tr>
+                                        <td>${new Date(t.date).toLocaleDateString('id-ID')}</td>
+                                        <td>${t.category}</td>
+                                        <td>${t.description || '-'}</td>
+                                        <td>${formatRupiah(t.amount)}</td>
+                                        <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}">${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            showNotification('Laporan berhasil dihasilkan');
+        }
+
+        // Get month name
+        function getMonthName(monthNumber) {
+            const months = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            return months[parseInt(monthNumber) - 1];
+        }
+
+        // Export data
+        function exportData() {
+            const exportType = document.getElementById('exportType').value;
+            const exportFormat = document.getElementById('exportFormat').value;
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+            
+            let dataToExport = [];
+            let fileName = '';
+            
+            // Filter data based on type
+            if (exportType === 'transactions') {
+                dataToExport = getData('transactions');
+                fileName = 'transaksi';
+            } else if (exportType === 'debts') {
+                dataToExport = getData('debts');
+                fileName = 'utang';
+            } else if (exportType === 'receivables') {
+                dataToExport = getData('receivables');
+                fileName = 'piutang';
+            } else if (exportType === 'all') {
+                dataToExport = {
+                    transactions: getData('transactions'),
+                    debts: getData('debts'),
+                    receivables: getData('receivables')
+                };
+                fileName = 'semua-data';
+            }
+            
+            // Filter by date if provided
+            if (startDate || endDate) {
+                const filterByDate = (items) => {
+                    return items.filter(item => {
+                        const itemDate = new Date(item.date);
+                        const start = startDate ? new Date(startDate) : null;
+                        const end = endDate ? new Date(endDate) : null;
+                        
+                        if (start && end) {
+                            return itemDate >= start && itemDate <= end;
+                        } else if (start) {
+                            return itemDate >= start;
+                        } else if (end) {
+                            return itemDate <= end;
+                        }
+                        return true;
+                    });
+                };
+                
+                if (exportType === 'all') {
+                    dataToExport.transactions = filterByDate(dataToExport.transactions);
+                    dataToExport.debts = filterByDate(dataToExport.debts);
+                    dataToExport.receivables = filterByDate(dataToExport.receivables);
+                } else {
+                    dataToExport = filterByDate(dataToExport);
+                }
+            }
+            
+            // Prepare data based on format
+            let exportContent = '';
+            let mimeType = '';
+            
+            if (exportFormat === 'csv') {
+                if (exportType === 'all') {
+                    // For all data, we'll create a ZIP with multiple CSV files
+                    showNotification('Export semua data dalam format CSV belum didukung', 'warning');
+                    return;
+                } else {
+                    // Convert to CSV
+                    if (dataToExport.length === 0) {
+                        showNotification('Tidak ada data untuk diexport', 'warning');
+                        return;
+                    }
+                    
+                    // Get headers
+                    const headers = Object.keys(dataToExport[0]);
+                    
+                    // Create CSV content
+                    exportContent = headers.join(',') + '\n';
+                    exportContent += dataToExport.map(item => {
+                        return headers.map(header => {
+                            // Format date fields
+                            if (header === 'date' || header === 'dueDate' || header === 'createdAt') {
+                                return new Date(item[header]).toISOString();
+                            }
+                            return item[header];
+                        }).join(',');
+                    }).join('\n');
+                    
+                    mimeType = 'text/csv';
+                    fileName += '.csv';
+                }
+            } else if (exportFormat === 'json') {
+                exportContent = JSON.stringify(dataToExport, null, 2);
+                mimeType = 'application/json';
+                fileName += '.json';
+            } else if (exportFormat === 'pdf') {
+                showNotification('Export PDF belum didukung', 'warning');
+                return;
+            }
+            
+            // Create download link
+            const blob = new Blob([exportContent], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Data berhasil diexport (${exportFormat.toUpperCase()})`);
+        }
+
+        // Format amount input
+        function formatAmountInput(input) {
+            input.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                value = value ? parseInt(value) : 0;
+                this.value = formatRupiah(value).replace('Rp', '').trim();
+            });
+        }
+
+        // Initialize amount inputs
+        function initAmountInputs() {
+            const amountInputs = [
+                'incomeAmount', 'expenseAmount', 'debtAmount', 'receivableAmount',
+                'editTransactionAmount', 'editDebtAmount'
+            ];
+            
+            amountInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    formatAmountInput(input);
+                }
+            });
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('sidebar-collapsed');
+            mainContent.classList.toggle('main-content-expanded');
+        }
+
+        // Switch section
+        function switchSection(sectionId, title) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update page title
+            document.getElementById('pageTitle').textContent = title;
+            
+            // Load data if needed
+            if (sectionId === 'transactions-section') {
+                loadTransactionsTable();
+            } else if (sectionId === 'debts-section') {
+                loadDebtsTable();
+            }
+        }
+
+        // Initialize date inputs with current date
+        function initDateInputs() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInputs = [
+                'incomeDate', 'expenseDate', 'debtDate', 'debtDueDate',
+                'receivableDate', 'receivableDueDate'
+            ];
+            
+            dateInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = today;
+                }
+            });
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create stars animation
+            createStars();
+            
+            // Check login status
+            checkLogin();
+            
+            // Initialize amount inputs
+            initAmountInputs();
+            
+            // Initialize date inputs
+            initDateInputs();
+            
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                login(username, password);
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    logout();
+                }
+            });
+            
+            // Sidebar toggle
+            document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+            
+            // Sidebar menu items
+            document.querySelectorAll('.sidebar-menu a').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all items
+                    document.querySelectorAll('.sidebar-menu a').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Get section to show
+                    const sectionId = this.getAttribute('data-section');
+                    const title = this.textContent;
+                    
+                    // Switch section
+                    switchSection(sectionId, title);
+                });
+            });
+            
+            // Income form
+            document.getElementById('incomeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const amount = document.getElementById('incomeAmount').value;
+                const category = document.getElementById('incomeCategory').value;
+                const date = document.getElementById('incomeDate').value;
+                const description = document.getElementById('incomeDescription').value;
+                
+                addTransaction('income', amount, category, date, description);
+                
+                // Reset form
+                this.reset();
+                document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+            });
+            
+            // Expense form
+            document.getElementById('expenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const amount = document.getElementById('expenseAmount').value;
+                const category = document.getElementById('expenseCategory').value;
+                const date = document.getElementById('expenseDate').value;
+                const description = document.getElementById('expenseDescription').value;
+                
+                addTransaction('expense', amount, category, date, description);
+                
+                // Reset form
+                this.reset();
+                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            });
+            
+            // Debt form
+            document.getElementById('debtForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const amount = document.getElementById('debtAmount').value;
+                const person = document.getElementById('debtPerson').value;
+                const date = document.getElementById('debtDate').value;
+                const dueDate = document.getElementById('debtDueDate').value;
+                const description = document.getElementById('debtDescription').value;
+                
+                addDebt('debt', amount, person, date, dueDate, description);
+                
+                // Reset form
+                this.reset();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('debtDate').value = today;
+                document.getElementById('debtDueDate').value = today;
+            });
+            
+            // Receivable form
+            document.getElementById('receivableForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const amount = document.getElementById('receivableAmount').value;
+                const person = document.getElementById('receivablePerson').value;
+                const date = document.getElementById('receivableDate').value;
+                const dueDate = document.getElementById('receivableDueDate').value;
+                const description = document.getElementById('receivableDescription').value;
+                
+                addDebt('receivable', amount, person, date, dueDate, description);
+                
+                // Reset form
+                this.reset();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('receivableDate').value = today;
+                document.getElementById('receivableDueDate').value = today;
+            });
+            
+            // Transaction filter
+            document.getElementById('transactionFilter').addEventListener('change', function() {
+                const filter = this.value;
+                const month = document.getElementById('transactionMonthFilter').value;
+                loadTransactionsTable(filter, month);
+            });
+            
+            document.getElementById('transactionMonthFilter').addEventListener('change', function() {
+                const month = this.value;
+                const filter = document.getElementById('transactionFilter').value;
+                loadTransactionsTable(filter, month);
+            });
+            
+            // Debt filter
+            document.getElementById('debtTypeFilter').addEventListener('change', function() {
+                const typeFilter = this.value;
+                const statusFilter = document.getElementById('debtStatusFilter').value;
+                loadDebtsTable(typeFilter, statusFilter);
+            });
+            
+            document.getElementById('debtStatusFilter').addEventListener('change', function() {
+                const statusFilter = this.value;
+                const typeFilter = document.getElementById('debtTypeFilter').value;
+                loadDebtsTable(typeFilter, statusFilter);
+            });
+            
+            // View all transactions button
+            document.getElementById('viewAllTransactionsBtn').addEventListener('click', function() {
+                // Switch to transactions section
+                document.querySelectorAll('.sidebar-menu a').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                document.querySelector('.sidebar-menu a[data-section="transactions-section"]').classList.add('active');
+                switchSection('transactions-section', 'Data Transaksi');
+            });
+            
+            // Generate report button
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+            
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            
+            // Edit transaction modal
+            document.getElementById('closeEditTransactionModal').addEventListener('click', function() {
+                document.getElementById('editTransactionModal').style.display = 'none';
+            });
+            
+            document.getElementById('updateTransactionBtn').addEventListener('click', updateTransaction);
+            
+            // Edit debt modal
+            document.getElementById('closeEditDebtModal').addEventListener('click', function() {
+                document.getElementById('editDebtModal').style.display = 'none';
+            });
+            
+            document.getElementById('updateDebtBtn').addEventListener('click', updateDebt);
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === document.getElementById('editTransactionModal')) {
+                    document.getElementById('editTransactionModal').style.display = 'none';
+                }
+                
+                if (e.target === document.getElementById('editDebtModal')) {
+                    document.getElementById('editDebtModal').style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
